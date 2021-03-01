@@ -27,15 +27,21 @@ let h = Person(name: "Harry")
 var invitedPersons: Array<Person> = [a, b, c, d, e, f, g, h]
 var couples: Array<Family> = [Family(a, h), Family(c, d), Family(g,b)]
 
-func findFamily(of person: Person, in families: Array<Family>) -> Family? {
-    return families.first(where: { $0.1 == person || $0.0 == person })
+func buildFamiliesIndex(families: Array<Family>) -> Dictionary<Person, Family> {
+    var dict = Dictionary<Person, Family>()
+    for family in families {
+        dict[family.0] = family
+        dict[family.1] = family
+    }
+    return dict
 }
 
 func findInvitedFamilies(invitedPersons: Array<Person>, existingFamilies: Array<Family>) -> Array<Family> {
     var invitedFamilies = Array<Family>()
     var checkedFamilyMembers = Array<Person>()
+    let familyIndex = buildFamiliesIndex(families: existingFamilies)
     for person in invitedPersons {
-        if let family = findFamily(of: person, in: existingFamilies),
+        if let family = familyIndex[person],
            invitedPersons.contains(family.0),
            invitedPersons.contains(family.1),
            !checkedFamilyMembers.contains(family.0),
@@ -51,16 +57,16 @@ func findInvitedFamilies(invitedPersons: Array<Person>, existingFamilies: Array<
 
 func findFirstInvitedFamily(invitedPersons: Array<Person>, existingFamilies: Array<Family>) -> Family? {
     var checkedFamilyMembers = Array<Person>()
+    let familyIndex = buildFamiliesIndex(families: existingFamilies)
     for person in invitedPersons {
         checkedFamilyMembers.append(person)
-        if let family = findFamily(of: person, in: existingFamilies) {
+        if let family = familyIndex[person] {
             if checkedFamilyMembers.contains(family.0),
                checkedFamilyMembers.contains(family.1) {
                 return family
             }
         }
     }
-    
     return nil
 }
 
