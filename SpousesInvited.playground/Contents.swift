@@ -13,7 +13,14 @@ class Person: NSObject {
     }
 }
 
-typealias Family = (Person, Person)
+struct Family: Equatable, CustomStringConvertible {
+    let firstSpouse: Person
+    let secondSpouse: Person
+    
+    var description: String {
+        return firstSpouse.name + " and " + secondSpouse.name
+    }
+}
 
 let a = Person(name: "Ash")
 let b = Person(name: "Billie")
@@ -25,29 +32,27 @@ let g = Person(name: "George")
 let h = Person(name: "Harry")
 
 var invitedPersons: Array<Person> = [a, b, c, d, e, f, g, h]
-var couples: Array<Family> = [Family(a, h), Family(c, d), Family(g,b)]
+var couples: Array<Family> = [Family(firstSpouse: a, secondSpouse: h),
+                              Family(firstSpouse: c, secondSpouse: d),
+                              Family(firstSpouse: g, secondSpouse: b)]
 
 func buildFamiliesIndex(families: Array<Family>) -> Dictionary<Person, Family> {
     var dict = Dictionary<Person, Family>()
     for family in families {
-        dict[family.0] = family
-        dict[family.1] = family
+        dict[family.firstSpouse] = family
+        dict[family.secondSpouse] = family
     }
     return dict
 }
 
 func findInvitedFamilies(invitedPersons: Array<Person>, existingFamilies: Array<Family>) -> Array<Family> {
     var invitedFamilies = Array<Family>()
-    var checkedFamilyMembers = Array<Person>()
     let familyIndex = buildFamiliesIndex(families: existingFamilies)
     for person in invitedPersons {
         if let family = familyIndex[person],
-           invitedPersons.contains(family.0),
-           invitedPersons.contains(family.1),
-           !checkedFamilyMembers.contains(family.0),
-           !checkedFamilyMembers.contains(family.1) {
-            checkedFamilyMembers.append(family.0)
-            checkedFamilyMembers.append(family.1)
+           invitedPersons.contains(family.firstSpouse),
+           invitedPersons.contains(family.secondSpouse),
+           !invitedFamilies.contains(family) {
             invitedFamilies.append(family)
         }
     }
@@ -61,8 +66,8 @@ func findFirstInvitedFamily(invitedPersons: Array<Person>, existingFamilies: Arr
     for person in invitedPersons {
         checkedFamilyMembers.append(person)
         if let family = familyIndex[person] {
-            if checkedFamilyMembers.contains(family.0),
-               checkedFamilyMembers.contains(family.1) {
+            if checkedFamilyMembers.contains(family.firstSpouse),
+               checkedFamilyMembers.contains(family.secondSpouse) {
                 return family
             }
         }
